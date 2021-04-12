@@ -53,6 +53,27 @@ class Customer {
     return new Customer(customer);
   }
 
+  static async search(query){
+    const names = query.split(' ')
+    let custObjs = []
+  
+    for(let name of names){
+      const result = await db.query(`
+      SELECT * FROM customers 
+      WHERE first_name LIKE $1`, [`%${name}%`])
+      custObjs = custObjs.concat(result.rows)
+      const result2 = await db.query(`
+      SELECT * FROM customers
+      WHERE last_name LIKE $1`, [`%${name}%`])
+      custObjs = custObjs.concat(result2.rows)
+    }
+    let customers = []
+    for(let cust of custObjs){
+      customers.push(new Customer(cust.id, cust.first_name, cust.last_name, cust.phone, cust.notes))
+    }
+    return customers
+  }
+
   /** get all reservations for this customer. */
 
   async getReservations() {
